@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family: sans-serif; background:#f5f5f5; padding:20px}
+.card{max-width:500px; margin:auto; background:white; padding:25px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1)}
+input, textarea, select{width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px; box-sizing: border-box}
+button{width:100%; padding:14px; background:#000; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Nexora Solutions</h2>
+  <p>Request a Quote</p>
+  <form id="companyForm">
+    <input id="name" placeholder="Your Name" required>
+    <input id="company" placeholder="Company Name" required>
+    <input id="phone" placeholder="Phone Number" required>
+    <input id="email" placeholder="Work Email">
+    <select id="service">
+      <option>Web Development</option>
+      <option>App Development</option>
+      <option>IT Consulting</option>
+    </select>
+    <textarea id="message" placeholder="Your Requirement" rows="4"></textarea>
+    <button type="submit" id="btn">Send Enquiry →</button>
+  </form>
+  <p id="status" style="text-align:center; margin-top:15px"></p>
+</div>
+
+<script>
+const SHEET_URL = "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38";
+const OWNER_EMAIL = "meescooby@gmail.com"; // <--- CHANGE THIS TO OWNER EMAIL
+
+document.getElementById('companyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  btn.innerText = "Sending...";
+
+  const data = {
+    Name: document.getElementById('name').value,
+    Company: document.getElementById('company').value,
+    Phone: document.getElementById('phone').value,
+    Email: document.getElementById('email').value,
+    Service: document.getElementById('service').value,
+    Message: document.getElementById('message').value,
+    Date: new Date().toLocaleString()
+  };
+
+  // 1. Save to Google Sheet
+  fetch(SHEET_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+
+  // 2. Send Email (No API key needed)
+  let formData = new FormData();
+  formData.append("_subject", `New Lead: ${data.Company} - ${data.Service}`);
+  formData.append("_template", "table");
+  formData.append("Name", data.Name);
+  formData.append("Company", data.Company);
+  formData.append("Phone", data.Phone);
+  formData.append("Client Email", data.Email);
+  formData.append("Service", data.Service);
+  formData.append("Message", data.Message);
+
+  await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, {
+    method: 'POST',
+    body: formData
+  });
+
+  document.getElementById('status').innerText = "✅ Lead saved to Sheet + Email sent!";
+  e.target.reset();
+  btn.innerText = "Send Enquiry →";
+});
+</script>
+</body>
+      </html>

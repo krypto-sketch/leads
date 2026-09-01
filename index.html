@@ -2,41 +2,67 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body{font-family: sans-serif; background:#f5f5f5; padding:20px}
-.card{max-width:500px; margin:auto; background:white; padding:25px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1)}
-input, textarea, select{width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px; box-sizing: border-box}
-button{width:100%; padding:14px; background:#000; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer}
+*{font-family:'Inter',sans-serif; box-sizing:border-box}
+body{background:#f8f9ff; margin:0; padding:20px; display:flex; align-items:center; min-height:100vh}
+.card{max-width:520px; width:100%; margin:auto; background:white; padding:35px; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.08); border:1px solid #eee}
+.badge{background:#eef2ff; color:#4f46e5; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; margin-bottom:12px}
+h2{margin:5px 0; font-size:26px}
+.sub{color:#666; margin-bottom:25px; font-size:14px}
+label{font-size:13px; font-weight:600; color:#333; margin-top:10px; display:block}
+input, select, textarea{width:100%; padding:14px; margin:6px 0 12px 0; border:1.5px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; transition:0.2s}
+input:focus, select:focus, textarea:focus{border-color:#4f46e5; background:#fcfcff}
+button{width:100%; padding:15px; background:#111827; color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; margin-top:10px}
+button:hover{background:#000}
+#status{text-align:center; margin-top:15px; font-size:14px; font-weight:600; padding:12px; border-radius:8px; display:none}
+.success{background:#dcfce7; color:#166534}
+.error{background:#fee2e2; color:#991b1b}
+.footer{text-align:center; margin-top:20px; font-size:11px; color:#999}
 </style>
 </head>
 <body>
 <div class="card">
-  <h2>Nexora Solutions</h2>
-  <p>Request a Quote</p>
+  <div class="badge">● Accepting New Projects</div>
+  <h2>Let's build something great</h2>
+  <p class="sub">Get a proposal in 24 hours. No spam, ever.</p>
+  
   <form id="companyForm">
-    <input id="name" placeholder="Your Name" required>
-    <input id="company" placeholder="Company Name" required>
-    <input id="phone" placeholder="Phone Number" required>
-    <input id="email" placeholder="Work Email">
+    <label>Full Name *</label>
+    <input id="name" placeholder="Rahul Sharma" required>
+    <label>Company Name *</label>
+    <input id="company" placeholder="Nexora Pvt Ltd" required>
+    <label>Phone Number *</label>
+    <input id="phone" placeholder="+91 98xxxx xx10" required>
+    <label>Work Email *</label>
+    <input id="email" type="email" placeholder="rahul@company.com" required>
+    <label>Service Needed</label>
     <select id="service">
       <option>Web Development</option>
-      <option>App Development</option>
-      <option>IT Consulting</option>
+      <option>Mobile App Development</option>
+      <option>UI/UX Design</option>
+      <option>IT Consulting & Support</option>
+      <option>Digital Marketing</option>
     </select>
-    <textarea id="message" placeholder="Your Requirement" rows="4"></textarea>
+    <label>Project Details</label>
+    <textarea id="message" rows="4" placeholder="Tell us about your project, budget, timeline..."></textarea>
     <button type="submit" id="btn">Send Enquiry →</button>
   </form>
-  <p id="status" style="text-align:center; margin-top:15px"></p>
+  
+  <div id="status"></div>
+  <div class="footer">Trusted by 50+ companies • Secure & Encrypted • Powered by Nexora</div>
 </div>
 
 <script>
 const SHEET_URL = "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38";
-const OWNER_EMAIL = "meescooby@gmail.com"; // <--- CHANGE THIS TO OWNER EMAIL
+const OWNER_EMAIL = "meescooby@gmail.com";
+const COMPANY_NAME = "Nexora Solutions";
 
 document.getElementById('companyForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btn');
-  btn.innerText = "Sending...";
+  const status = document.getElementById('status');
+  btn.innerText = "Sending..."; btn.disabled = true;
 
   const data = {
     Name: document.getElementById('name').value,
@@ -45,36 +71,42 @@ document.getElementById('companyForm').addEventListener('submit', async (e) => {
     Email: document.getElementById('email').value,
     Service: document.getElementById('service').value,
     Message: document.getElementById('message').value,
-    Date: new Date().toLocaleString()
+    Date: new Date().toLocaleString('en-IN')
   };
 
-  // 1. Save to Google Sheet
-  fetch(SHEET_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
-  });
+  try {
+    fetch(SHEET_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
 
-  // 2. Send Email (No API key needed)
-  let formData = new FormData();
-  formData.append("_subject", `New Lead: ${data.Company} - ${data.Service}`);
-  formData.append("_template", "table");
-  formData.append("Name", data.Name);
-  formData.append("Company", data.Company);
-  formData.append("Phone", data.Phone);
-  formData.append("Client Email", data.Email);
-  formData.append("Service", data.Service);
-  formData.append("Message", data.Message);
+    let ownerData = new FormData();
+    ownerData.append("_subject", `🔥 New Lead: ${data.Company} | ${data.Service}`);
+    ownerData.append("_template", "table");
+    ownerData.append("_captcha", "false");
+    ownerData.append("Name", data.Name);
+    ownerData.append("Company", data.Company);
+    ownerData.append("Phone", data.Phone);
+    ownerData.append("Email", data.Email);
+    ownerData.append("Service", data.Service);
+    ownerData.append("Message", data.Message);
+    ownerData.append("Date", data.Date);
+    await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, { method: 'POST', body: ownerData });
 
-  await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, {
-    method: 'POST',
-    body: formData
-  });
+    let customerData = new FormData();
+    customerData.append("_subject", `Thanks for contacting ${COMPANY_NAME}!`);
+    customerData.append("_captcha", "false");
+    customerData.append("_autoresponse", `Hi ${data.Name},\n\nThank you for reaching out to ${COMPANY_NAME}!\n\nWe received your enquiry for ${data.Service} and will get back to you within 12 hours.\n\nBest Regards,\n${COMPANY_NAME} Team`);
+    customerData.append("email", data.Email);
+    customerData.append("name", data.Name);
+    await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, { method: 'POST', body: customerData });
 
-  document.getElementById('status').innerText = "✅ Lead saved to Sheet + Email sent!";
-  e.target.reset();
-  btn.innerText = "Send Enquiry →";
+    status.style.display = "block"; status.className = "success";
+    status.innerText = "✅ Thank you! We received your enquiry. Check your email.";
+    e.target.reset();
+  } catch(err){
+    status.style.display = "block"; status.className = "error";
+    status.innerText = "❌ Error: " + err.message;
+  }
+  btn.innerText = "Send Enquiry →"; btn.disabled = false;
 });
 </script>
 </body>
-      </html>
+</html>

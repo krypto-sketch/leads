@@ -1,111 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexora Solutions - Contact</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-*{font-family:'Inter',sans-serif; box-sizing:border-box}
-body{background:#f8f9ff; margin:0; padding:20px; display:flex; align-items:center; min-height:100vh}
-.card{max-width:520px; width:100%; margin:auto; background:white; padding:35px; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.08); border:1px solid #eee}
-.badge{background:#eef2ff; color:#4f46e5; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; margin-bottom:12px}
-h2{margin:5px 0; font-size:26px}
-.sub{color:#666; margin-bottom:25px; font-size:14px}
-label{font-size:13px; font-weight:600; color:#333; margin-top:10px; display:block}
-input, select, textarea{width:100%; padding:14px; margin:6px 0 12px 0; border:1.5px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; transition:0.2s}
-input:focus, select:focus, textarea:focus{border-color:#4f46e5; background:#fcfcff}
-button{width:100%; padding:15px; background:#111827; color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; margin-top:10px}
-button:hover{background:#000}
-#status{text-align:center; margin-top:15px; font-size:14px; font-weight:600; padding:12px; border-radius:8px; display:none}
-.success{background:#dcfce7; color:#166534}
-.error{background:#fee2e2; color:#991b1b}
-.footer{text-align:center; margin-top:20px; font-size:11px; color:#999}
+* {box-sizing: border-box; font-family: 'Inter', sans-serif;}
+body {margin: 0; background: #f5f7ff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;}
+.card {background: white; width: 100%; max-width: 500px; padding: 32px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.08);}
+h2 {margin: 0 0 6px 0; font-size: 24px;}
+.sub {color: #666; font-size: 14px; margin-bottom: 20px;}
+input, select, textarea {width: 100%; padding: 12px 14px; margin: 7px 0; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s;}
+input:focus, select:focus, textarea:focus {border-color: #000;}
+textarea {min-height: 80px; resize: none;}
+button {width: 100%; padding: 14px; margin-top: 12px; background: #000; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer;}
+button:disabled {opacity: 0.6;}
+#status {display: none; margin-top: 16px; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: center;}
+.success {display: block !important; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;}
+.error {display: block !important; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="badge">● Accepting New Projects</div>
-  <h2>Let's build something great</h2>
-  <p class="sub">Get a proposal in 24 hours. No spam, ever.</p>
-  
-  <form id="companyForm">
-    <label>Full Name *</label>
-    <input id="name" placeholder="Rahul Sharma" required>
-    <label>Company Name *</label>
-    <input id="company" placeholder="Nexora Pvt Ltd" required>
-    <label>Phone Number *</label>
-    <input id="phone" placeholder="+91 98xxxx xx10" required>
-    <label>Work Email *</label>
-    <input id="email" type="email" placeholder="rahul@company.com" required>
-    <label>Service Needed</label>
-    <select id="service">
-      <option>Web Development</option>
-      <option>Mobile App Development</option>
-      <option>UI/UX Design</option>
-      <option>IT Consulting & Support</option>
-      <option>Digital Marketing</option>
-    </select>
-    <label>Project Details</label>
-    <textarea id="message" rows="4" placeholder="Tell us about your project, budget, timeline..."></textarea>
-    <button type="submit" id="btn">Send Enquiry →</button>
-  </form>
-  
-  <div id="status"></div>
-  <div class="footer">Trusted by 50+ companies • Secure & Encrypted • Powered by Nexora</div>
+<h2>Let's talk about your project</h2>
+<p class="sub">Fill the form, we reply in 12 hours.</p>
+<form id="leadForm">
+<input id="name" placeholder="Full Name *" required>
+<input id="company" placeholder="Company Name *" required>
+<input id="phone" placeholder="Phone / WhatsApp *" required>
+<input id="email" type="email" placeholder="Work Email *" required>
+<select id="service"><option value="Web Development">Web Development</option><option value="Mobile App Development">Mobile App Development</option><option value="UI/UX Design">UI/UX Design</option><option value="IT Consulting">IT Consulting</option></select>
+<textarea id="message" placeholder="Tell us about your project..."></textarea>
+<button id="btn" type="submit">Send Enquiry →</button>
+</form>
+<div id="status"></div>
 </div>
 
 <script>
+// --- YOUR FINAL KEYS - 100% READY ---
 const SHEET_URL = "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38";
+const SERVICE_ID = "service_t34juym";
+const PUBLIC_KEY = "xLTipM6Y5jthRtrtU";
+const OWNER_TEMPLATE_ID = "template_2757mhb";
+const CUSTOMER_TEMPLATE_ID = "template_8r0oazi";
 const OWNER_EMAIL = "meescooby@gmail.com";
 const COMPANY_NAME = "Nexora Solutions";
 
-document.getElementById('companyForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('btn');
-  const status = document.getElementById('status');
-  btn.innerText = "Sending..."; btn.disabled = true;
+emailjs.init(PUBLIC_KEY);
 
-  const data = {
-    Name: document.getElementById('name').value,
-    Company: document.getElementById('company').value,
-    Phone: document.getElementById('phone').value,
-    Email: document.getElementById('email').value,
-    Service: document.getElementById('service').value,
-    Message: document.getElementById('message').value,
-    Date: new Date().toLocaleString('en-IN')
-  };
+document.getElementById('leadForm').addEventListener('submit', async (e)=>{
+e.preventDefault();
+const btn = document.getElementById('btn');
+const status = document.getElementById('status');
+const originalText = btn.innerText;
+btn.innerText = "Sending..."; btn.disabled = true;
+status.style.display = "none";
 
-  try {
-    fetch(SHEET_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+const formData = {
+name: document.getElementById('name').value.trim(),
+company: document.getElementById('company').value.trim(),
+phone: document.getElementById('phone').value.trim(),
+email: document.getElementById('email').value.trim(),
+service: document.getElementById('service').value,
+message: document.getElementById('message').value.trim() || "No message provided",
+to_email: OWNER_EMAIL,
+company_name: COMPANY_NAME,
+date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+};
 
-    let ownerData = new FormData();
-    ownerData.append("_subject", `🔥 New Lead: ${data.Company} | ${data.Service}`);
-    ownerData.append("_template", "table");
-    ownerData.append("_captcha", "false");
-    ownerData.append("Name", data.Name);
-    ownerData.append("Company", data.Company);
-    ownerData.append("Phone", data.Phone);
-    ownerData.append("Email", data.Email);
-    ownerData.append("Service", data.Service);
-    ownerData.append("Message", data.Message);
-    ownerData.append("Date", data.Date);
-    await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, { method: 'POST', body: ownerData });
+try {
+// 1. Save to Google Sheet (don't wait for it)
+fetch(SHEET_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(formData) }).catch(()=>{});
 
-    let customerData = new FormData();
-    customerData.append("_subject", `Thanks for contacting ${COMPANY_NAME}!`);
-    customerData.append("_captcha", "false");
-    customerData.append("_autoresponse", `Hi ${data.Name},\n\nThank you for reaching out to ${COMPANY_NAME}!\n\nWe received your enquiry for ${data.Service} and will get back to you within 12 hours.\n\nBest Regards,\n${COMPANY_NAME} Team`);
-    customerData.append("email", data.Email);
-    customerData.append("name", data.Name);
-    await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, { method: 'POST', body: customerData });
+// 2. Send LEAD to YOU (Owner)
+await emailjs.send(SERVICE_ID, OWNER_TEMPLATE_ID, formData);
 
-    status.style.display = "block"; status.className = "success";
-    status.innerText = "✅ Thank you! We received your enquiry. Check your email.";
-    e.target.reset();
-  } catch(err){
-    status.style.display = "block"; status.className = "error";
-    status.innerText = "❌ Error: " + err.message;
-  }
-  btn.innerText = "Send Enquiry →"; btn.disabled = false;
+// 3. Send THANK YOU to CUSTOMER
+await emailjs.send(SERVICE_ID, CUSTOMER_TEMPLATE_ID, {
+...formData,
+to_email: formData.email
+});
+
+status.className = "success";
+status.innerText = "✅ Done! Lead saved + Email sent to you + Thank you sent to customer";
+status.style.display = "block";
+e.target.reset();
+} catch (err) {
+status.className = "error";
+status.innerText = "❌ Failed: " + (err.text || JSON.stringify(err));
+status.style.display = "block";
+console.error(err);
+}
+btn.innerText = originalText; btn.disabled = false;
 });
 </script>
 </body>

@@ -28,12 +28,13 @@ button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-rad
 </form>
 <div id="status"></div>
 </div>
+
 <script>
 const CONFIG = {
-  SHEET_URL: "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38",
+  SHEET_URL: "https://sheetbest.com", // Restored your SheetBest endpoint ID
   SERVICE_ID: "service_t34juym",
   PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
-  OWNER_TEMPLATE_ID: "owner_notification", // Change this to your "owner_notification" template ID if you changed it in Step 1
+  OWNER_TEMPLATE_ID: "owner_notification", // Your exact owner template ID
   COMPANY_NAME: "Nexora Solutions"
 };
 
@@ -50,15 +51,21 @@ document.getElementById('form').addEventListener('submit', async (e) => {
   btn.innerText = "Sending..."; 
   status.style.display = "none";
 
-  // Capturing the 6 fields exactly mapping to your EmailJS tags
+  // Force strict Indian Standard Time (IST) formatting
+  const currentIST = new Date().toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "medium"
+  });
+
   const data = {
     name: document.getElementById('name').value.trim(),
     company: document.getElementById('company').value.trim(),
     phone: document.getElementById('phone').value.trim(),
     email: document.getElementById('email').value.trim(),
-    requirement: document.getElementById('service').value, // This maps to your template's {{requirement}} variable
+    requirement: document.getElementById('service').value, 
     message: document.getElementById('message').value.trim() || "No message",
-    date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    date: currentIST, // Strict IST Time
     company_name: CONFIG.COMPANY_NAME
   };
 
@@ -70,8 +77,7 @@ document.getElementById('form').addEventListener('submit', async (e) => {
       body: JSON.stringify(data)
     });
 
-    // 2. Trigger the primary EmailJS template. 
-    // Because they are linked in the EmailJS dashboard, this automatically sends the customer confirmation too!
+    // 2. Trigger the primary EmailJS template
     await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, data);
 
     status.className = "ok"; 
@@ -89,6 +95,5 @@ document.getElementById('form').addEventListener('submit', async (e) => {
   btn.innerText = "Send Enquiry →";
 });
 </script>
-
 </body>
 </html>

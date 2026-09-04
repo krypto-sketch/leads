@@ -33,38 +33,62 @@ const CONFIG = {
   SHEET_URL: "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38",
   SERVICE_ID: "service_t34juym",
   PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
-  OWNER_TEMPLATE_ID: "template_2757mhb",
-  CUSTOMER_TEMPLATE_ID: "template_4xfzr94",
-  OWNER_EMAIL: "meescooby@gmail.com",
+  OWNER_TEMPLATE_ID: "owner_notification", // Change this to your "owner_notification" template ID if you changed it in Step 1
   COMPANY_NAME: "Nexora Solutions"
 };
+
+// Initialize EmailJS
 emailjs.init(CONFIG.PUBLIC_KEY);
-document.getElementById('form').addEventListener('submit', async (e)=>{
-e.preventDefault();
-const btn=document.getElementById('btn'), status=document.getElementById('status');
-btn.disabled=true; btn.innerText="Sending..."; status.style.display="none";
-const data={
-name:document.getElementById('name').value.trim(),
-company:document.getElementById('company').value.trim(),
-phone:document.getElementById('phone').value.trim(),
-email:document.getElementById('email').value.trim(),
-service:document.getElementById('service').value,
-message:document.getElementById('message').value.trim()||"No message",
-date:new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}),
-company_name:CONFIG.COMPANY_NAME,
-to_email:CONFIG.OWNER_EMAIL
-};
-try{
-fetch(CONFIG.SHEET_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
-await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, data);
-await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, {...data, to_email: data.email});
-status.className="ok"; status.innerText="✅ Sent! You + Customer both got email + Sheet saved"; status.style.display="block";
-e.target.reset();
-}catch(err){
-status.className="err"; status.innerText="❌ "+(err.text||JSON.stringify(err)); status.style.display="block";
-}
-btn.disabled=false; btn.innerText="Send Enquiry →";
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  
+  btn.disabled = true; 
+  btn.innerText = "Sending..."; 
+  status.style.display = "none";
+
+  // Capturing the 6 fields exactly mapping to your EmailJS tags
+  const data = {
+    name: document.getElementById('name').value.trim(),
+    company: document.getElementById('company').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    requirement: document.getElementById('service').value, // This maps to your template's {{requirement}} variable
+    message: document.getElementById('message').value.trim() || "No message",
+    date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    company_name: CONFIG.COMPANY_NAME
+  };
+
+  try {
+    // 1. Log to your Google Sheet asynchronously
+    fetch(CONFIG.SHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    // 2. Trigger the primary EmailJS template. 
+    // Because they are linked in the EmailJS dashboard, this automatically sends the customer confirmation too!
+    await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, data);
+
+    status.className = "ok"; 
+    status.innerText = "✅ Sent! Application submitted successfully.";
+    status.style.display = "block";
+    e.target.reset();
+
+  } catch (err) {
+    status.className = "err"; 
+    status.innerText = "❌ " + (err.text || JSON.stringify(err)); 
+    status.style.display = "block";
+  }
+
+  btn.disabled = false; 
+  btn.innerText = "Send Enquiry →";
 });
 </script>
+
 </body>
 </html>

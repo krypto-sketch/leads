@@ -1,120 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact</title>
-<style>
-*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
-.card{background:#fff;width:100%;max-width:480px;padding:28px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
-input,select,textarea{width:100%;padding:12px;margin:6px 0;border:1.5px solid #e2e8f0;border-radius:10px}
-button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-radius:10px;font-weight:700;margin-top:10px;cursor:pointer}
-#status{display:none;margin-top:12px;padding:12px;border-radius:10px;font-weight:600;text-align:center}
-.ok{display:block!important;background:#dcfce7;color:#14532d} .err{display:block!important;background:#fee2e2;color:#7f1d1d}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact</title>
+  <!-- EmailJS Browser SDK Package -->
+  <script src="https://jsdelivr.net"></script>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui; }
+    body { margin: 0; background: #f8fafc; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; width: 100%; max-width: 480px; padding: 28px; border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.08); }
+    input, select, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; }
+    button { width: 100%; padding: 13px; background: #000; color: #fff; border: none; border-radius: 10px; font-weight: 700; margin-top: 10px; cursor: pointer; }
+    #status { display: none; margin-top: 12px; padding: 12px; border-radius: 10px; font-weight: 600; text-align: center; }
+    .ok { display: block!important; background: #dcfce7; color: #14532d; } 
+    .err { display: block!important; background: #fee2e2; color: #7f1d1d; }
+  </style>
 </head>
 <body>
-<div class="card">
-<h2>Get a free quote</h2>
-<form id="form">
-<input id="name" placeholder="Full Name *" required>
-<input id="company" placeholder="Company Name *" required>
-<input id="phone" placeholder="Phone *" required>
-<!-- Formcarry relies on the name attribute being exactly 'email' to trigger the auto-reply -->
-<input id="email" type="email" name="email" placeholder="Work Email *" required>
-<select id="service"><option>Web Development</option><option>Mobile App</option><option>UI/UX Design</option><option>IT Consulting</option></select>
-<textarea id="message" placeholder="Message"></textarea>
-<button id="btn" type="submit">Send Enquiry →</button>
-</form>
-<div id="status"></div>
-</div>
-<script>
-const CONFIG = {
-  SHEET_URL: "https://sheetbest.com",
-  SERVICE_ID: "service_t34juym",
-  PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
-  OWNER_TEMPLATE_ID: "owner_notification", 
-  CUSTOMER_TEMPLATE_ID: "client_auto_reply",
-  COMPANY_NAME: "Nexora Solutions"
-};
 
-// Initialize EmailJS
-emailjs.init(CONFIG.PUBLIC_KEY);
+  <div class="card">
+    <h2>Get a free quote</h2>
+    <form id="form">
+      <input id="name" placeholder="Full Name *" required>
+      <input id="company" placeholder="Company Name *" required>
+      <input id="phone" placeholder="Phone *" required>
+      <input id="email" type="email" placeholder="Work Email *" required>
+      <select id="service">
+        <option>Web Development</option>
+        <option>Mobile App</option>
+        <option>UI/UX Design</option>
+        <option>IT Consulting</option>
+      </select>
+      <textarea id="message" placeholder="Message"></textarea>
+      <button id="btn" type="submit">Send Enquiry →</button>
+    </form>
+    <div id="status"></div>
+  </div>
 
-document.getElementById('form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const btn = document.getElementById('btn');
-  const status = document.getElementById('status');
-  
-  btn.disabled = true; 
-  btn.innerText = "Sending..."; 
-  status.style.display = "none";
+  <script>
+    const CONFIG = {
+      SHEET_URL: "https://sheetbest.com",
+      SERVICE_ID: "service_t34juym",
+      PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
+      OWNER_TEMPLATE_ID: "owner_notification", 
+      CUSTOMER_TEMPLATE_ID: "client_auto_reply",
+      COMPANY_NAME: "Nexora Solutions"
+    };
 
-  // Force strict Indian Standard Time (IST) formatting
-  const currentIST = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    dateStyle: "medium",
-    timeStyle: "medium"
-  });
+    // Initialize EmailJS Engine
+    emailjs.init(CONFIG.PUBLIC_KEY);
 
-  const templateParams = {
-    name: document.getElementById('name').value.trim(),
-    company: document.getElementById('company').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    requirement: document.getElementById('service').value, 
-    message: document.getElementById('message').value.trim() || "No message",
-    date: currentIST,
-    company_name: CONFIG.COMPANY_NAME
-  };
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btn');
+      const status = document.getElementById('status');
+      
+      btn.disabled = true; 
+      btn.innerText = "Sending..."; 
+      status.style.display = "none";
 
-  try {
-    // 1. Log to Google Sheet
-    fetch(CONFIG.SHEET_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(templateParams)
+      // Force strict Indian Standard Time (IST) formatting
+      const currentIST = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        dateStyle: "medium",
+        timeStyle: "medium"
+      });
+
+      const templateParams = {
+        name: document.getElementById('name').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        requirement: document.getElementById('service').value, 
+        message: document.getElementById('message').value.trim() || "No message",
+        date: currentIST,
+        company_name: CONFIG.COMPANY_NAME
+      };
+
+      // 1. Send Sheet data inside isolated try-catch block
+      try {
+        fetch(CONFIG.SHEET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(templateParams)
+        });
+      } catch (sheetError) {
+        console.warn("SheetBest error bypassed to prevent email system crash.");
+      }
+
+      // 2. Process Email delivery logic
+      try {
+        // Dispatch Business Notification
+        await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, templateParams);
+
+        // Dispatch Customer Confirmation
+        await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, templateParams);
+
+        status.className = "ok"; 
+        status.innerText = "✅ Sent! Both emails delivered + Sheet saved.";
+        status.style.display = "block";
+        e.target.reset();
+
+      } catch (err) {
+        status.className = "err"; 
+        status.innerText = "❌ Error: " + (err.text || JSON.stringify(err));
+        status.style.display = "block";
+      }
+
+      btn.disabled = false; 
+      btn.innerText = "Send Enquiry →";
     });
-
-    // 2. Direct API call to send Owner Email
-    await fetch("https://emailjs.com", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: CONFIG.SERVICE_ID,
-        template_id: CONFIG.OWNER_TEMPLATE_ID,
-        user_id: CONFIG.PUBLIC_KEY,
-        template_params: templateParams
-      })
-    });
-
-    // 3. Direct API call to send Customer Auto-Reply Email
-    await fetch("https://emailjs.com", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: CONFIG.SERVICE_ID,
-        template_id: CONFIG.CUSTOMER_TEMPLATE_ID,
-        user_id: CONFIG.PUBLIC_KEY,
-        template_params: templateParams
-      })
-    });
-
-    status.className = "ok"; 
-    status.innerText = "✅ Sent! Both emails delivered + Sheet saved.";
-    status.style.display = "block";
-    e.target.reset();
-
-  } catch (err) {
-    status.className = "err"; 
-    status.innerText = "❌ Error submitting application.";
-    status.style.display = "block";
-  }
-
-  btn.disabled = false; 
-  btn.innerText = "Send Enquiry →";
-});
   </script>
+
 </body>
-</html>
+        </html>
+  

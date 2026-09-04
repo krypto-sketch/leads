@@ -3,115 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact - Nexora Solutions</title>
+<title>Contact</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-*{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
-body{margin:0;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
-.card{background:#fff;width:100%;max-width:480px;padding:28px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.07);border:1px solid #eef2f7}
-h2{margin:0 0 4px 0} .muted{color:#64748b;font-size:13px;margin-bottom:18px}
-input,select,textarea{width:100%;padding:12px 14px;margin:6px 0;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#000}
-textarea{min-height:90px;resize:vertical}
+*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;width:100%;max-width:480px;padding:28px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+input,select,textarea{width:100%;padding:12px;margin:6px 0;border:1.5px solid #e2e8f0;border-radius:10px}
 button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-radius:10px;font-weight:700;margin-top:10px;cursor:pointer}
-button:disabled{opacity:.6;cursor:not-allowed}
-#status{display:none;margin-top:14px;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-align:center}
-.ok{display:block!important;background:#dcfce7;color:#14532d;border:1px solid #bbf7d0}
-.err{display:block!important;background:#fee2e2;color:#7f1d1d;border:1px solid #fecaca}
-.log{font-size:11px;color:#94a3b8;margin-top:10px;white-space:pre-wrap}
+#status{display:none;margin-top:12px;padding:12px;border-radius:10px;font-weight:600;text-align:center}
+.ok{display:block!important;background:#dcfce7;color:#14532d} .err{display:block!important;background:#fee2e2;color:#7f1d1d}
 </style>
 </head>
 <body>
 <div class="card">
 <h2>Get a free quote</h2>
-<div class="muted">We reply within 12 hours</div>
 <form id="form">
 <input id="name" placeholder="Full Name *" required>
 <input id="company" placeholder="Company Name *" required>
 <input id="phone" placeholder="Phone *" required>
 <input id="email" type="email" placeholder="Work Email *" required>
-<select id="service">
-<option value="Web Development">Web Development</option>
-<option value="Mobile App Development">Mobile App Development</option>
-<option value="UI/UX Design">UI/UX Design</option>
-<option value="IT Consulting">IT Consulting</option>
-</select>
-<textarea id="message" placeholder="Project details..."></textarea>
+<select id="service"><option>Web Development</option><option>Mobile App</option><option>UI/UX Design</option><option>IT Consulting</option></select>
+<textarea id="message" placeholder="Message"></textarea>
 <button id="btn" type="submit">Send Enquiry →</button>
 </form>
 <div id="status"></div>
-<div id="debug" class="log"></div>
 </div>
-
 <script>
-// ===== YOUR FINAL CONFIG - DO NOT CHANGE =====
 const CONFIG = {
   SHEET_URL: "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38",
   SERVICE_ID: "service_t34juym",
   PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
   OWNER_TEMPLATE_ID: "template_2757mhb",
-  CUSTOMER_TEMPLATE_ID: "template_8r0oazi",
+  CUSTOMER_TEMPLATE_ID: "template_4xfzr94",
   OWNER_EMAIL: "meescooby@gmail.com",
   COMPANY_NAME: "Nexora Solutions"
 };
-
 emailjs.init(CONFIG.PUBLIC_KEY);
-const $ = id => document.getElementById(id);
-
-$("form").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const btn = $("btn"), status = $("status"), debug = $("debug");
-  btn.disabled = true; btn.innerText = "Processing...";
-  status.style.display = "none"; debug.innerText = "";
-
-  const payload = {
-    name: $("name").value.trim(),
-    company: $("company").value.trim(),
-    phone: $("phone").value.trim(),
-    email: $("email").value.trim(),
-    service: $("service").value,
-    message: $("message").value.trim() || "No message",
-    date: new Date().toLocaleString("en-IN", {timeZone:"Asia/Kolkata"}),
-    company_name: CONFIG.COMPANY_NAME,
-    to_email: CONFIG.OWNER_EMAIL // for owner template
-  };
-
-  let log = [];
-
-  try {
-    // 1. SHEET - Non-blocking
-    fetch(CONFIG.SHEET_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
-    }).then(r=>log.push("Sheet: " + r.status)).catch(er=>log.push("Sheet Error: "+er));
-
-    // 2. OWNER EMAIL - This must succeed
-    log.push("Sending owner email to " + CONFIG.OWNER_EMAIL + "...");
-    const ownerRes = await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, payload);
-    log.push("Owner Email: SUCCESS " + ownerRes.status);
-
-    // 3. CUSTOMER EMAIL - Send with customer's email in to_email
-    log.push("Sending customer email to " + payload.email + "...");
-    const customerPayload = {...payload, to_email: payload.email};
-    const custRes = await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, customerPayload);
-    log.push("Customer Email: SUCCESS " + custRes.status);
-
-    status.className = "ok";
-    status.innerText = "✅ Success! Lead saved + Owner email + Customer thank you sent";
-    status.style.display = "block";
-    $("form").reset();
-
-  } catch (err) {
-    status.className = "err";
-    status.innerText = "❌ Error: " + (err.text || err.message || JSON.stringify(err));
-    status.style.display = "block";
-    log.push("FAILED: " + JSON.stringify(err));
-    console.error(err);
-  } finally {
-    debug.innerText = log.join("\n");
-    btn.disabled = false; btn.innerText = "Send Enquiry →";
-  }
+document.getElementById('form').addEventListener('submit', async (e)=>{
+e.preventDefault();
+const btn=document.getElementById('btn'), status=document.getElementById('status');
+btn.disabled=true; btn.innerText="Sending..."; status.style.display="none";
+const data={
+name:document.getElementById('name').value.trim(),
+company:document.getElementById('company').value.trim(),
+phone:document.getElementById('phone').value.trim(),
+email:document.getElementById('email').value.trim(),
+service:document.getElementById('service').value,
+message:document.getElementById('message').value.trim()||"No message",
+date:new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}),
+company_name:CONFIG.COMPANY_NAME,
+to_email:CONFIG.OWNER_EMAIL
+};
+try{
+fetch(CONFIG.SHEET_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, data);
+await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, {...data, to_email: data.email});
+status.className="ok"; status.innerText="✅ Sent! You + Customer both got email + Sheet saved"; status.style.display="block";
+e.target.reset();
+}catch(err){
+status.className="err"; status.innerText="❌ "+(err.text||JSON.stringify(err)); status.style.display="block";
+}
+btn.disabled=false; btn.innerText="Send Enquiry →";
 });
 </script>
 </body>

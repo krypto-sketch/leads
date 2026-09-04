@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact</title>
-  <script src="https://jsdelivr.net"></script>
   <style>
     * { box-sizing: border-box; font-family: system-ui; }
     body { margin: 0; background: #f8fafc; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px; }
@@ -12,9 +11,7 @@
     input, select, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; }
     button { width: 100%; padding: 13px; background: #000; color: #fff; border: none; border-radius: 10px; font-weight: 700; margin-top: 10px; cursor: pointer; }
     #status { display: none; margin-top: 12px; padding: 12px; border-radius: 10px; font-weight: 600; text-align: center; }
-    .info { display: block!important; background: #eff6ff; color: #1e40af; }
-    .ok { display: block!important; background: #dcfce7; color: #14532d; } 
-    .err { display: block!important; background: #fee2e2; color: #7f1d1d; }
+    .ok { display: block!important; background: #dcfce7; color: #14532d; }
   </style>
 </head>
 <body>
@@ -33,78 +30,69 @@
         <option>IT Consulting</option>
       </select>
       <textarea id="message" placeholder="Message"></textarea>
-      <button id="btn" type="submit">Send Enquiry →</button>
+      <button id="btn" type="submit">Submit Enquiry →</button>
     </form>
     <div id="status"></div>
   </div>
 
   <script>
     const CONFIG = {
-      SHEET_URL: "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38",
-      SERVICE_ID: "service_t34juym",
-      PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
-      OWNER_TEMPLATE_ID: "owner_notification", 
-      CUSTOMER_TEMPLATE_ID: "client_auto_reply",
-      COMPANY_NAME: "Nexora Solutions"
+      SHEET_URL: "https://sheetbest.com",
+      BUSINESS_EMAIL: "meescooby@gmail.com" // Your business inbox
     };
 
-    emailjs.init(CONFIG.PUBLIC_KEY);
-
-    document.getElementById('form').addEventListener('submit', async (e) => {
+    document.getElementById('form').addEventListener('submit', function(e) {
       e.preventDefault();
+      
       const btn = document.getElementById('btn');
       const status = document.getElementById('status');
       
-      btn.disabled = true; 
-      btn.innerText = "Processing..."; 
-      
-      // NEW: Instantly update UI text so it never stays silent
-      status.className = "info";
-      status.innerText = "⏳ Connecting to EmailJS servers...";
+      const name = document.getElementById('name').value.trim();
+      const company = document.getElementById('company').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const requirement = document.getElementById('service').value;
+      const message = document.getElementById('message').value.trim() || "No message";
 
       const currentIST = new Date().toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "medium"
       });
 
-      const templateParams = {
-        name: document.getElementById('name').value.trim(),
-        company: document.getElementById('company').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        requirement: document.getElementById('service').value, 
-        message: document.getElementById('message').value.trim() || "No message",
-        date: currentIST,
-        company_name: CONFIG.COMPANY_NAME
-      };
+      const templateParams = { name, company, phone, email, requirement, message, date: currentIST };
 
-      // 1. Isolated Sheet Logging
+      // 1. Log to Google Sheets (Runs silently in background)
       try {
         fetch(CONFIG.SHEET_URL, {
-          method: "POST", headers: { "Content-Type": "application/json" },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(templateParams)
         });
-      } catch (e) { console.warn("Sheet logging bypassed."); }
+      } catch (err) { console.warn("Sheet update skipped"); }
 
-      // 2. Clear Email delivery steps
-      try {
-        status.innerText = "🚀 Sending Business Owner Notification...";
-        await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, templateParams);
-        
-        status.innerText = "✉️ Sending Customer Auto-Reply Confirmation...";
-        await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, templateParams);
+      // 2. Draft Mail Handler
+      const emailSubject = encodeURIComponent(`New Inquiry from ${name} (${company})`);
+      const emailBody = encodeURIComponent(
+        `Hello,\n\nYou have received a new website submission:\n\n` +
+        `Name: ${name}\n` +
+        `Company: ${company}\n` +
+        `Phone: ${phone}\n` +
+        `Client Email: ${email}\n` +
+        `Requirement: ${requirement}\n` +
+        `Date (IST): ${currentIST}\n\n` +
+        `Message:\n${message}`
+      );
 
-        status.className = "ok"; 
-        status.innerText = "✅ Success! Both emails sent + Sheet saved.";
-        e.target.reset();
-      } catch (err) {
-        status.className = "err"; 
-        // NEW: Pulls the direct raw string reason from EmailJS dashboard error logs
-        status.innerText = "❌ EmailJS Failed: " + (err.text || JSON.stringify(err));
-      }
+      // Launches user's native device mail app with everything typed out
+      window.location.href = `mailto:${CONFIG.BUSINESS_EMAIL}?subject=${emailSubject}&body=${emailBody}`;
+
+      // 3. UI Confirmation State
+      status.className = "ok";
+      status.innerText = "✅ Form recorded! Mail client opened.";
+      status.style.display = "block";
       
-      btn.disabled = false; 
-      btn.innerText = "Send Enquiry →";
+      e.target.reset();
     });
   </script>
+
 </body>
 </html>

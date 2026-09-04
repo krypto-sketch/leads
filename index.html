@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact</title>
-<script src="https://jsdelivr.net"></script>
 <style>
 *{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
 .card{background:#fff;width:100%;max-width:480px;padding:28px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
@@ -21,7 +20,8 @@ button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-rad
 <input id="name" placeholder="Full Name *" required>
 <input id="company" placeholder="Company Name *" required>
 <input id="phone" placeholder="Phone *" required>
-<input id="email" type="email" placeholder="Work Email *" required>
+<!-- Formcarry relies on the name attribute being exactly 'email' to trigger the auto-reply -->
+<input id="email" type="email" name="email" placeholder="Work Email *" required>
 <select id="service"><option>Web Development</option><option>Mobile App</option><option>UI/UX Design</option><option>IT Consulting</option></select>
 <textarea id="message" placeholder="Message"></textarea>
 <button id="btn" type="submit">Send Enquiry →</button>
@@ -32,15 +32,9 @@ button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-rad
 <script>
 const CONFIG = {
   SHEET_URL: "https://sheetbest.com",
-  SERVICE_ID: "service_t34juym",
-  PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
-  OWNER_TEMPLATE_ID: "owner_notification", 
-  CUSTOMER_TEMPLATE_ID: "client_auto_reply", // Added explicit customer template ID
+  FORMCARRY_URL: "https://formcarry.com/s/xPjhEV2kB4H", // Dropped your verified Formcarry link here
   COMPANY_NAME: "Nexora Solutions"
 };
-
-// Initialize EmailJS
-emailjs.init(CONFIG.PUBLIC_KEY);
 
 document.getElementById('form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -66,32 +60,37 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     email: document.getElementById('email').value.trim(),
     requirement: document.getElementById('service').value, 
     message: document.getElementById('message').value.trim() || "No message",
-    date: currentIST, 
+    date: currentIST,
     company_name: CONFIG.COMPANY_NAME
   };
 
   try {
-    // 1. Log to Google Sheet asynchronously
+    // 1. Log to your Google Sheet asynchronously via SheetBest
     fetch(CONFIG.SHEET_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
-    // 2. Trigger Owner Notification explicitly
-    await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, data);
+    // 2. Dispatch straight to Formcarry endpoint
+    const response = await fetch(CONFIG.FORMCARRY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-    // 3. Trigger Customer Auto-Reply explicitly
-    await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, data);
-
-    status.className = "ok"; 
-    status.innerText = "✅ Sent! You + Customer both got email + Sheet saved";
-    status.style.display = "block";
-    e.target.reset();
+    if (response.ok) {
+      status.className = "ok"; 
+      status.innerText = "✅ Sent! You + Customer both got email + Sheet saved";
+      status.style.display = "block";
+      e.target.reset();
+    } else {
+      throw new Error("Formcarry Submission Failed");
+    }
 
   } catch (err) {
     status.className = "err"; 
-    status.innerText = "❌ " + (err.text || JSON.stringify(err)); 
+    status.innerText = "❌ Submission failed. Please verify your form setup.";
     status.style.display = "block";
   }
 

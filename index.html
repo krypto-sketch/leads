@@ -28,13 +28,18 @@ button{width:100%;padding:13px;background:#000;color:#fff;border:none;border-rad
 </form>
 <div id="status"></div>
 </div>
-
 <script>
 const CONFIG = {
   SHEET_URL: "https://sheetbest.com",
-  FORMCARRY_URL: "https://formcarry.com/s/xPjhEV2kB4H", // Dropped your verified Formcarry link here
+  SERVICE_ID: "service_t34juym",
+  PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
+  OWNER_TEMPLATE_ID: "owner_notification", 
+  CUSTOMER_TEMPLATE_ID: "client_auto_reply",
   COMPANY_NAME: "Nexora Solutions"
 };
+
+// Initialize EmailJS
+emailjs.init(CONFIG.PUBLIC_KEY);
 
 document.getElementById('form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -53,7 +58,7 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     timeStyle: "medium"
   });
 
-  const data = {
+  const templateParams = {
     name: document.getElementById('name').value.trim(),
     company: document.getElementById('company').value.trim(),
     phone: document.getElementById('phone').value.trim(),
@@ -65,38 +70,51 @@ document.getElementById('form').addEventListener('submit', async (e) => {
   };
 
   try {
-    // 1. Log to your Google Sheet asynchronously via SheetBest
+    // 1. Log to Google Sheet
     fetch(CONFIG.SHEET_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify(templateParams)
     });
 
-    // 2. Dispatch straight to Formcarry endpoint
-    const response = await fetch(CONFIG.FORMCARRY_URL, {
+    // 2. Direct API call to send Owner Email
+    await fetch("https://emailjs.com", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify(data)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: CONFIG.SERVICE_ID,
+        template_id: CONFIG.OWNER_TEMPLATE_ID,
+        user_id: CONFIG.PUBLIC_KEY,
+        template_params: templateParams
+      })
     });
 
-    if (response.ok) {
-      status.className = "ok"; 
-      status.innerText = "✅ Sent! You + Customer both got email + Sheet saved";
-      status.style.display = "block";
-      e.target.reset();
-    } else {
-      throw new Error("Formcarry Submission Failed");
-    }
+    // 3. Direct API call to send Customer Auto-Reply Email
+    await fetch("https://emailjs.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: CONFIG.SERVICE_ID,
+        template_id: CONFIG.CUSTOMER_TEMPLATE_ID,
+        user_id: CONFIG.PUBLIC_KEY,
+        template_params: templateParams
+      })
+    });
+
+    status.className = "ok"; 
+    status.innerText = "✅ Sent! Both emails delivered + Sheet saved.";
+    status.style.display = "block";
+    e.target.reset();
 
   } catch (err) {
     status.className = "err"; 
-    status.innerText = "❌ Submission failed. Please verify your form setup.";
+    status.innerText = "❌ Error submitting application.";
     status.style.display = "block";
   }
 
   btn.disabled = false; 
   btn.innerText = "Send Enquiry →";
 });
-</script>
+  </script>
 </body>
 </html>

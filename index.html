@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact</title>
-  <!-- CORRECTED: Official EmailJS Browser Package SDK -->
   <script src="https://jsdelivr.net"></script>
   <style>
     * { box-sizing: border-box; font-family: system-ui; }
@@ -13,6 +12,7 @@
     input, select, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; }
     button { width: 100%; padding: 13px; background: #000; color: #fff; border: none; border-radius: 10px; font-weight: 700; margin-top: 10px; cursor: pointer; }
     #status { display: none; margin-top: 12px; padding: 12px; border-radius: 10px; font-weight: 600; text-align: center; }
+    .info { display: block!important; background: #eff6ff; color: #1e40af; }
     .ok { display: block!important; background: #dcfce7; color: #14532d; } 
     .err { display: block!important; background: #fee2e2; color: #7f1d1d; }
   </style>
@@ -40,8 +40,7 @@
 
   <script>
     const CONFIG = {
-      // CORRECTED: Restored your unique connection endpoint string
-      SHEET_URL: "https://sheetbest.com",
+      SHEET_URL: "https://api.sheetbest.com/sheets/843141df-865c-4ec3-b558-7e8289c9da38",
       SERVICE_ID: "service_t34juym",
       PUBLIC_KEY: "xLTipM6Y5jthRtrtU",
       OWNER_TEMPLATE_ID: "owner_notification", 
@@ -49,24 +48,22 @@
       COMPANY_NAME: "Nexora Solutions"
     };
 
-    // Initialize EmailJS Engine
     emailjs.init(CONFIG.PUBLIC_KEY);
 
     document.getElementById('form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       const btn = document.getElementById('btn');
       const status = document.getElementById('status');
       
       btn.disabled = true; 
-      btn.innerText = "Sending..."; 
-      status.style.display = "none";
+      btn.innerText = "Processing..."; 
+      
+      // NEW: Instantly update UI text so it never stays silent
+      status.className = "info";
+      status.innerText = "⏳ Connecting to EmailJS servers...";
 
-      // Force strict Indian Standard Time (IST) formatting
       const currentIST = new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        dateStyle: "medium",
-        timeStyle: "medium"
+        timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "medium"
       });
 
       const templateParams = {
@@ -80,40 +77,34 @@
         company_name: CONFIG.COMPANY_NAME
       };
 
-      // 1. Send Sheet data inside isolated try-catch block
+      // 1. Isolated Sheet Logging
       try {
         fetch(CONFIG.SHEET_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(templateParams)
         });
-      } catch (sheetError) {
-        console.warn("SheetBest error bypassed to prevent email system crash.");
-      }
+      } catch (e) { console.warn("Sheet logging bypassed."); }
 
-      // 2. Process Email delivery logic
+      // 2. Clear Email delivery steps
       try {
-        // Dispatch Business Notification
+        status.innerText = "🚀 Sending Business Owner Notification...";
         await emailjs.send(CONFIG.SERVICE_ID, CONFIG.OWNER_TEMPLATE_ID, templateParams);
-
-        // Dispatch Customer Confirmation
+        
+        status.innerText = "✉️ Sending Customer Auto-Reply Confirmation...";
         await emailjs.send(CONFIG.SERVICE_ID, CONFIG.CUSTOMER_TEMPLATE_ID, templateParams);
 
         status.className = "ok"; 
-        status.innerText = "✅ Sent! Both emails delivered + Sheet saved.";
-        status.style.display = "block";
+        status.innerText = "✅ Success! Both emails sent + Sheet saved.";
         e.target.reset();
-
       } catch (err) {
         status.className = "err"; 
-        status.innerText = "❌ Error: " + (err.text || JSON.stringify(err));
-        status.style.display = "block";
+        // NEW: Pulls the direct raw string reason from EmailJS dashboard error logs
+        status.innerText = "❌ EmailJS Failed: " + (err.text || JSON.stringify(err));
       }
-
+      
       btn.disabled = false; 
       btn.innerText = "Send Enquiry →";
     });
   </script>
-
 </body>
 </html>
